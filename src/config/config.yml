@@ -1,0 +1,39 @@
+---
+production: &default
+  serverPort: 3333
+  baseUrl: http://partners.easytrack.mx
+  api:
+    version: v1
+  languages:
+    default: es-MX
+    list: [en-US, es-MX]
+  security:
+    secret: asedrftghj654sdfsdfjsfmsdf99765we8wne8009654vbbjhdshjsd
+    validateSecurityToken: true
+    refreshSecurityToken: false
+  db:
+    mongodb:
+      host: ds111262.mlab.com
+      user: root
+      password: root
+      database: graphqlapi
+      port: 11262
+  email:
+    host: mail.easytrack.mx
+    port: 25
+    secure: false
+    from: 'Partners Easytrack <sistemas@easytrack.mx>'
+    user: 'sistemas@easytrack.mx'
+    pass: 'yfJt3(9J5c'
+
+stage: &stage
+  <<: *default
+  baseUrl: http://stage.partners.dev
+
+latest: &latest
+  <<: *stage
+  baseUrl: http://latest.partners.dev
+
+development:
+  <<: *latest
+  baseUrl: http:/api.partners.dev
