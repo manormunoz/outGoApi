@@ -28,15 +28,21 @@ export function getToken(user) {
  * @returns {Object} User
  */
 export function getUserFomToken(token) {
-  try {
-    const _user = jwt.decode(token, $security().secret);
-    return User.findById(new Buffer(_user._id.toString(), 'base64').toString('ascii')).exec();
+  if(!token){
+    return null;
   }
-  catch (e) {
-    return new Promise((resolve, reject) => {
-      reject(Error('Something wrong'));
-    });
+  else{
+    try {
+      const _user = jwt.decode(token, $security().secret);
+      return User.findById(new Buffer(_user._id.toString(), 'base64').toString('ascii')).exec();
+    }
+    catch (e) {
+      return new Promise((resolve, reject) => {
+        reject(Error('Something wrong'));
+      });
+    }
   }
+
   /*
   getUserFomToken(token).then((user) => {
     return res.json({success: true, message: res.__.Users.authenticate.success, token: `JWT ${token}`});

@@ -6,7 +6,8 @@ import userModel from '../../../models/user';
 
 export default {
   type: new GraphQLList(userType),
-  resolve() {
+  resolve(root, params, { user, __ }) {
+    console.log(user);
     const users = userModel.find().exec();
     if (!users) {
       throw new Error('Error getting users');

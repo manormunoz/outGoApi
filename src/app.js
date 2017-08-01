@@ -10,6 +10,7 @@ import { formatErrorGenerator } from 'graphql-apollo-errors';
 
 // Local Dependencies
 import { getCurrentLanguage, loadLanguage } from './lib/i18n';
+import { getUserFomToken } from './lib/user';
 
 // Configuration
 import { $serverPort, $db, $security } from './lib/config';
@@ -80,16 +81,37 @@ const formatErrorOptions = {
 
 const formatError = formatErrorGenerator(formatErrorOptions);
 
+const getUserAuth = async (req) => {
+  const token = req.headers.authorization;
+  try {
+    const user = await getUserFomToken(token);
+    console.log(user);
+    req.user = user;
+  } catch (err) {
+    console.log(err);
+  }
+  req.next();
+};
+app.use(getUserAuth);
+
 app.get('/', (req, res) => {
   res.send('Hello');
 });
 
-app.use('/graphql', graphqlHTTP((req, res) => ({
+app.get('/graphql', graphqlHTTP((req, res) => ({
   formatError,
   schema,
   context: { SECRET: $security(), user: req.user, __: res.__ },
   graphiql: true,
   pretty: true
+})));
+
+app.post('/graphql', graphqlHTTP((req, res) => ({
+  formatError,
+  schema,
+  context: { SECRET: $security(), user: req.user, __: res.__ },
+  graphiql: false,
+  pretty: false
 })));
 
 app.listen($serverPort(), () => {
