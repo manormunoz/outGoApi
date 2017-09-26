@@ -1,10 +1,12 @@
 // NPM Dependencies
 import express from 'express';
+import bodyParser from 'body-parser';
 var logger = require('minilog')('errors-logger');
 import cors from 'cors';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
-import graphqlHTTP from 'express-graphql';
+import { graphqlExpress, graphiqlExpress } from 'graphql-server-express';
+
 
 import { formatErrorGenerator } from 'graphql-apollo-errors';
 
@@ -15,7 +17,7 @@ import { getUserFomToken } from './lib/user';
 // Configuration
 import { $serverPort, $db, $security } from './lib/config';
 
-import schema from './graphql';
+import schema from './schema';
 
 // Starting express application
 const app = express();
@@ -51,6 +53,14 @@ app.use(
     methods: ['GET', 'PUT', 'POST', 'OPTIONS']
   })
 );
+
+
+
+
+
+
+
+
 const formatErrorOptions = {
   logger,
   publicDataPath: 'public', // Only data under this path in the data object will be sent to the client (path parts should be separated by . - some.public.path)
@@ -85,7 +95,7 @@ const getUserAuth = async (req) => {
   const token = req.headers.authorization;
   try {
     const user = await getUserFomToken(token);
-    console.log(user);
+    console.log('aaaaaaa');
     req.user = user;
   } catch (err) {
     console.log(err);
@@ -94,25 +104,20 @@ const getUserAuth = async (req) => {
 };
 app.use(getUserAuth);
 
-app.get('/', (req, res) => {
-  res.send('Hello');
-});
 
-app.get('/graphql', graphqlHTTP((req, res) => ({
-  formatError,
-  schema,
-  context: { SECRET: $security(), user: req.user, __: res.__ },
-  graphiql: true,
-  pretty: true
-})));
+app.use(
+  '/graphql',
+  bodyParser.json(),
+  graphqlExpress({ schema })
+);
 
-app.post('/graphql', graphqlHTTP((req, res) => ({
-  formatError,
-  schema,
-  context: { SECRET: $security(), user: req.user, __: res.__ },
-  graphiql: false,
-  pretty: false
-})));
+app.use(
+  '/graphiql',
+  graphiqlExpress({
+    endpointURL: '/graphql'
+  })
+);
+
 
 app.listen($serverPort(), () => {
   console.log(`working ${$serverPort()}`);
